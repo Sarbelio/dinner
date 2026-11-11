@@ -114,6 +114,7 @@
   .sheet .uses{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
   .sheet .uses button{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:5px 10px;font:inherit;font-size:.88rem;cursor:pointer}
   .homelink{display:inline-block;color:var(--muted);text-decoration:none;font-size:.92rem;padding:4px 0 8px}
+  .gamelink{display:block;margin-top:12px;text-align:center;padding:14px;border-radius:14px;background:var(--accent);color:#fff;text-decoration:none;font-weight:800}
   .swapapp{display:block;margin:8px 0 2px;padding:11px 14px;border-radius:12px;background:var(--accent-soft);color:var(--accent);text-decoration:none;font-size:.92rem}
   .swapapp b{white-space:nowrap}
   .clear{background:none;border:none;color:var(--muted);font:inherit;font-size:.9rem;text-decoration:underline;cursor:pointer;padding:0;margin-top:10px}
@@ -337,6 +338,7 @@ function spin(lines, done){
 document.getElementById('toHome').href = /github\.io$/.test(location.hostname) ? '../' : 'https://claude.ai/artifact/8Luk9xrK7wKUPetmV8mAJP';
 // ---- 배달 앱 주소: GitHub Pages에서는 같은 계정의 /delivery/ 저장소, 그 밖에서는 Claude 링크 ----
 const ORDER_URL = /github\.io$/.test(location.hostname) ? '../delivery/' : 'https://claude.ai/artifact/VSAtKR51naycm66LRPTD5A';
+const DISH_URL = /github\.io$/.test(location.hostname) ? '../#dishes' : 'https://claude.ai/artifact/8Luk9xrK7wKUPetmV8mAJP#dishes';
 document.getElementById('toOrder').href = ORDER_URL;
 // 집에 늘 있다고 보는 양념·기본 재료 (장보기 목록에서 뺌)
 const DEF_STAPLE = ['쌀','파','마늘','양파','간장','고추장','된장','고춧가루','설탕','소금','참기름','식용유','밀가루','후추','식초','물엿','올리브유','전분','국간장','케첩','마요네즈'];
@@ -747,8 +749,9 @@ function renderResult(anim){
     S.hist=store.get('dn_hist',[]); // 배달 앱에서 남긴 기록도 살림
     S.hist.unshift({names,kind:'cook',ts:Date.now()}); S.hist=S.hist.slice(0,40); store.set('dn_hist',S.hist);
     renderHist();
-    dc.parentElement.outerHTML=`<div class="done">맛있게 드세요! 😊 오늘 메뉴는 기록해 둘게요.</div>`;
-    setTimeout(closeR,1600);
+    dc.parentElement.outerHTML=`<div class="done">맛있게 드세요! 😊 오늘 메뉴는 기록해 둘게요.</div>
+      <a class="gamelink" href="${DISH_URL}">🧽 설거지는 누가? 사다리·룰렛 →</a>`;
+    setTimeout(()=>{ const rs=document.getElementById('rsheet'); rs.scrollTo({top:rs.scrollHeight,behavior:'smooth'}); },50);
   };
   const cp=$('copyShop'); if(cp) cp.onclick=async()=>{
     const text='장보기: '+[...need].join(', ');
