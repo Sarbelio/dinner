@@ -139,18 +139,58 @@
   .empty{color:var(--muted);font-size:.95rem}
   @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   .rise{animation:rise .35s ease-out}
+
+  /* 밤(저녁 6시 반~새벽 5시)엔 첫 화면처럼 어둡게 */
+  html.night{--bg:#1a1916; --card:#25231f; --ink:#f2ede6; --muted:#aaa094; --line:#3b3732;
+      --accent:#6cc283; --accent-soft:#1f3326; --warm:#f0955a; --warm-soft:#3a2a1e;}
+  .wrap{padding-top:0 !important;padding-bottom:calc(170px + env(safe-area-inset-bottom)) !important}
+  /* 하늘색 띠 */
+  .band{display:flex;align-items:center;gap:12px;margin:0 calc(-16px - env(safe-area-inset-right)) 14px calc(-16px - env(safe-area-inset-left));padding:calc(16px + env(safe-area-inset-top)) 18px 18px;border-radius:0 0 22px 22px;background:linear-gradient(160deg,#8fcaf0,#c3e4fa 60%,#f2f7fb);color:#1f2d38}
+  .homebtn{flex:none;display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.45);text-decoration:none;font-size:1.2rem;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+  .btxt{flex:1;min-width:0}
+  .bdate{margin:0;font-size:.82rem;opacity:.8}
+  .band h1{font-size:1.35rem;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bemo{flex:none;font-size:2.1rem;line-height:1}
+  .sub{margin-top:2px}
+  /* 아래 고정 버튼 */
+  .ctabar{position:fixed;left:0;right:0;bottom:calc(62px + env(safe-area-inset-bottom));z-index:14;padding:18px 16px 10px;background:linear-gradient(to bottom,transparent,var(--bg) 45%);pointer-events:none}
+  .ctain{max-width:608px;margin:0 auto;pointer-events:auto}
+  .ctabar .go{margin:0;box-shadow:0 8px 22px rgba(200,100,30,.35)}
+  /* 아래 탭 */
+  .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--card);border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+  .tabin{max-width:640px;margin:0 auto;display:grid;gap:4px}
+  .tabin.three{grid-template-columns:repeat(3,1fr)} .tabin.two{grid-template-columns:1fr 1fr}
+  .tabbar button{border:none;background:transparent;color:var(--muted);font:inherit;font-size:.78rem;font-weight:700;padding:4px 0;border-radius:12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px}
+  .tabbar button span{font-size:1.35rem;line-height:1.2;filter:grayscale(1);opacity:.6}
+  .tabbar button.on{color:var(--ink);background:var(--bg)}
+  .tabbar button.on span{filter:none;opacity:1}
+  /* 결과 창 */
+  .rsheet{padding-top:6px}
+  .grab{position:sticky;top:-6px;z-index:2;display:flex;justify-content:center;align-items:center;height:34px;background:var(--card);margin:0 -18px;}
+  .grab span{width:44px;height:5px;border-radius:9px;background:var(--line)}
+  .grab .x{position:absolute;right:12px;top:2px;border:none;background:var(--bg);color:var(--ink);width:32px;height:32px;border-radius:50%;font:inherit;font-size:.95rem;cursor:pointer}
+  .rsheet #result .card{border:none;padding:0;margin:0;background:transparent}
+  .rsheet .swapapp{margin-top:18px}
+  /* 요리 이모지 */
+  .dhead{display:flex;align-items:center;gap:12px}
+  .demo{flex:none;display:grid;place-items:center;width:58px;height:58px;border-radius:16px;background:var(--bg);font-size:2.1rem;line-height:1}
+  .dhead h3{margin-bottom:2px}
+  /* 룰렛 */
+  .spin{padding:6px 0 4px}
+  .spinrow{border:1.5px dashed var(--line);border-radius:16px;padding:16px;margin-top:12px;text-align:center}
+  .spinname{font-size:1.6rem;font-weight:900;letter-spacing:-.3px;min-height:1.6em;transition:transform .08s}
+  .spinmsg{text-align:center;color:var(--muted);margin:14px 0 0}
+  @keyframes pop{0%{transform:scale(.92);opacity:.3}100%{transform:none;opacity:1}}
+  .pop{animation:pop .28s ease-out}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <a class="homelink" id="toHome" href="#">← 처음으로</a>
-  <h1>🍲 오늘 저녁 뭐 해 먹지?</h1>
-  <a class="swapapp" id="toOrder" href="#">🛵 오늘은 시켜 먹을까요? <b>배달 메뉴 고르기 →</b></a>
-  <nav class="tabs" id="tabs">
-    <button data-v="rec" class="on">🍽 추천</button>
-    <button data-v="menu">📋 메뉴 목록</button>
-    <button data-v="ingredients">🥕 재료 목록</button>
-  </nav>
+  <header class="band" id="band">
+    <a class="homebtn" id="toHome" href="#" aria-label="처음으로">🏠</a>
+    <div class="btxt"><p class="bdate" id="bdate"></p><h1>오늘 저녁 뭐 해 먹지?</h1></div>
+    <span class="bemo">🍲</span>
+  </header>
 
   <section id="v-rec">
   <p class="sub">몇 가지만 고르고 아래 주황색 버튼을 눌러 주세요.</p>
@@ -185,16 +225,15 @@
       <button class="tg" data-k="mild">👶 맵지 않게 (아이도 먹어요)<span class="sw"></span></button>
       <button class="tg on" data-k="norepeat">🔁 최근 3일 동안 먹은 건 빼고<span class="sw"></span></button>
     </div>
-    <button class="go" id="go">오늘 저녁 추천받기</button>
   </div>
 
-  <div id="result"></div>
 
   <div class="card">
     <p class="q">최근에 먹은 것 <small>🍲 해 먹음 · 🛵 시켜 먹음</small></p>
     <div class="hist" id="hist"></div>
     <button class="clear" id="clearHist">기록 지우기</button>
   </div>
+    <div class="ctabar"><div class="ctain"><button class="go" id="go">오늘 저녁 추천받기</button></div></div>
   </section>
 
   <section id="v-menu" hidden>
@@ -238,9 +277,61 @@
   </section>
 </div>
 
+<nav class="tabbar" id="tabs"><div class="tabin three">
+  <button data-v="rec" class="on"><span>🍽</span>추천</button>
+  <button data-v="menu"><span>📋</span>메뉴 목록</button>
+  <button data-v="ingredients"><span>🥕</span>재료 목록</button>
+</div></nav>
+
+<div class="sheetbg" id="rbg" hidden><div class="sheet rsheet" id="rsheet" role="dialog" aria-modal="true">
+  <div class="grab"><span></span><button type="button" class="x" id="rclose" aria-label="닫기">✕</button></div>
+  <div id="result"></div>
+  <a class="swapapp" id="toOrder" href="#">🛵 그냥 시켜 먹을까요? <b>배달 메뉴 고르기 →</b></a>
+</div></div>
 <div class="sheetbg" id="sheetbg" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
 
 <script>
+
+// ================= 첫 화면과 같은 시간대별 하늘색 =================
+const SKIES=[
+  [0,   '#0f1b3d','#1d2b5c','#2e3a6e','#f3f1ff'],
+  [5,   '#f6c9a8','#f9dfc4','#fdf1e2','#3a2a22'],
+  [7,   '#bfe0f5','#dcefff','#f7f4ee','#24313b'],
+  [11,  '#8fcaf0','#c3e4fa','#f2f7fb','#1f2d38'],
+  [16,  '#f7b26a','#f6a081','#f3c6b8','#3a2320'],
+  [18.5,'#5a3d7a','#c0607a','#f19a6b','#fff6f0'],
+  [20,  '#0f1b3d','#1d2b5c','#2e3a6e','#f3f1ff'],
+];
+function paintSky(){
+  const d=new Date(), hr=d.getHours()+d.getMinutes()/60;
+  let s=SKIES[0]; for(const x of SKIES) if(hr>=x[0]) s=x;
+  const band=document.getElementById('band');
+  band.style.background=`linear-gradient(160deg, ${s[1]}, ${s[2]} 60%, ${s[3]})`; band.style.color=s[4];
+  document.querySelectorAll('meta[name="theme-color"]').forEach(m=>m.setAttribute('content',s[1]));
+  document.documentElement.classList.toggle('night', hr>=18.5 || hr<5);
+  document.getElementById('bdate').textContent=`${d.getMonth()+1}월 ${d.getDate()}일 ${'일월화수목금토'[d.getDay()]}요일`;
+}
+paintSky(); setInterval(paintSky,60000);
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) paintSky(); });
+
+// ================= 추천 결과 창 =================
+function openR(){ document.getElementById('rbg').hidden=false; document.body.style.overflow='hidden'; document.getElementById('rsheet').scrollTop=0; }
+function closeR(){ document.getElementById('rbg').hidden=true; document.body.style.overflow=''; }
+document.getElementById('rclose').onclick=closeR;
+document.getElementById('rbg').addEventListener('click',e=>{ if(e.target.id==='rbg') closeR(); });
+// 룰렛: 이름이 휘리릭 돌다가 천천히 멈춤
+function spin(lines, done){
+  if(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches){ done(); return; }
+  const box=document.getElementById('result');
+  box.innerHTML=`<div class="spin">${lines.map((l,i)=>`<div class="spinrow"><div class="kind">${l.label}</div><div class="spinname" id="sp${i}">…</div></div>`).join('')}<p class="spinmsg">두구두구… 고르는 중 🎲</p></div>`;
+  let n=0, delay=45;
+  const tick=()=>{
+    lines.forEach((l,i)=>{ const el=document.getElementById('sp'+i); if(el && l.pool.length) el.textContent=l.pool[Math.floor(Math.random()*l.pool.length)]; });
+    n++; delay*=1.13;
+    if(n<16) setTimeout(tick,delay); else done();
+  };
+  tick();
+}
 document.getElementById('toHome').href = /github\.io$/.test(location.hostname) ? '../' : 'https://claude.ai/artifact/8Luk9xrK7wKUPetmV8mAJP';
 // ---- 배달 앱 주소: GitHub Pages에서는 같은 계정의 /delivery/ 저장소, 그 밖에서는 Claude 링크 ----
 const ORDER_URL = /github\.io$/.test(location.hostname) ? '../delivery/' : 'https://claude.ai/artifact/VSAtKR51naycm66LRPTD5A';
@@ -586,14 +677,26 @@ function recommend(){
   S.hist=store.get('dn_hist',[]);
   S.picked={};
   slots().forEach(([t])=>{ S.picked[t]=pickSlot(t); });
-  renderResult(true);
-  $('result').scrollIntoView({behavior:'smooth',block:'start'});
+  openR();
+  spin(slots().map(([t,label])=>({label, pool:candidates(t).map(d=>d.n)})), ()=>renderResult(true));
 }
 $('go').onclick=recommend;
 
+// ---- 요리 이모지 ----
+function emojiFor(d){
+  const n=d.n, R=[
+    [/파스타|스파게티|알리오/,'🍝'],[/카레|하이라이스|짜장/,'🍛'],[/김밥|주먹밥|유부초밥/,'🍙'],[/떡볶이/,'🍢'],[/만두/,'🥟'],
+    [/죽/,'🥣'],[/국수|칼국수|우동|라면|면/,'🍜'],[/덮밥|볶음밥|비빔밥|오므라이스|리조또|국밥/,'🍚'],[/찌개|국$|탕$|전골/,'🍲'],[/전$|전 |동그랑땡|부침/,'🥞'],
+    [/계란|달걀/,'🍳'],[/새우|감바스|조개|꽃게|굴/,'🦐'],[/오징어|낙지|쭈꾸미|오삼/,'🦑'],[/생선|고등어|동태|연어|갈치/,'🐟'],
+    [/닭/,'🍗'],[/소고기|불고기|장조림|차돌|함박/,'🥩'],[/돼지|제육|수육|삼겹|돈가스|고추잡채/,'🥓'],
+    [/나물|무침|생채|쌈|볶음/,'🥬'],[/찌개|국|탕|전골/,'🍲'],[/맛탕|고구마/,'🍠']];
+  for(const [re,e] of R) if(re.test(n)) return e;
+  return {soup:'🍲',main:'🍽',bowl:'🍚'}[d.t]||'🍽';
+}
+
 // ---- 결과 화면 ----
 function renderResult(anim){
-  const box=$('result');
+  const box=$('result'); const keep=$('rsheet').scrollTop;
   const sl=slots();
   let html=`<div class="card${anim?' rise':''}"><p class="q">오늘 저녁 추천 🍽</p>`;
   let need=new Set(); let total=0; let any=false;
@@ -602,9 +705,9 @@ function renderResult(anim){
     if(!d){ html+=`<div class="dish"><div class="kind">${label}</div><p class="empty">조건에 맞는 요리가 없어요. '30분 안에'나 '맵지 않게'를 꺼 보세요.</p></div>`; return; }
     any=true; total=Math.max(total,d.min);
     d.i.forEach(x=>{ if(!STAPLE.includes(x) && !has(x)) need.add(x); });
-    html+=`<div class="dish">
-      <div class="kind">${label}</div>
-      <h3>${esc(d.n)}</h3>
+    html+=`<div class="dish${anim?' pop':''}">
+      <div class="dhead"><span class="demo">${emojiFor(d)}</span><div><div class="kind">${label}</div>
+      <h3>${esc(d.n)}</h3></div></div>
       <div class="time">⏱ 약 ${d.min}분${d.sp?' · 🌶 매콤':''}</div>
       <div class="ings">${d.i.map(x=>`<span class="ing${has(x)?' have':''}">${has(x)?'✔ ':''}${esc(x)}</span>`).join('')}</div>
       <div class="tip">💡 ${esc(d.tip)}</div>
@@ -618,12 +721,12 @@ function renderResult(anim){
             <div style="margin-top:8px"><button class="swap" id="copyShop" style="margin:0">장보기 목록 복사</button></div></div>`
         : `<div class="shop"><b>🛒 장 안 봐도 돼요!</b>있는 재료로 다 만들 수 있어요.</div>`;
     }
-    html+=`<div class="row2"><button class="btn ghost" id="again">전부 다시 추천</button><button class="btn ok" id="decide">오늘 이걸로 할게요</button></div>`;
+    html+=`<div class="row2"><button class="btn ghost" id="again">전부 다시 추천</button><button class="btn ok" id="decide">이걸로 할게요</button></div>`;
   }
   html+=moreBlock();
   html+=webBlock();
   html+=`</div>`;
-  box.innerHTML=html;
+  box.innerHTML=html; if(!anim) $('rsheet').scrollTop=keep;
   bindWeb();
   box.querySelectorAll('.alt').forEach(b=>b.onclick=()=>{
     const d=DISHES.find(x=>x.n===b.dataset.n); if(!d) return;
@@ -643,6 +746,7 @@ function renderResult(anim){
     S.hist.unshift({names,kind:'cook',ts:Date.now()}); S.hist=S.hist.slice(0,40); store.set('dn_hist',S.hist);
     renderHist();
     dc.parentElement.outerHTML=`<div class="done">맛있게 드세요! 😊 오늘 메뉴는 기록해 둘게요.</div>`;
+    setTimeout(closeR,1600);
   };
   const cp=$('copyShop'); if(cp) cp.onclick=async()=>{
     const text='장보기: '+[...need].join(', ');
