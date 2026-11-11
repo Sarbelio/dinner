@@ -113,6 +113,9 @@
   .sheet .err{color:#c0392b;font-size:.92rem;margin:10px 0 0;min-height:1em}
   .sheet .uses{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
   .sheet .uses button{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:5px 10px;font:inherit;font-size:.88rem;cursor:pointer}
+  .homelink{display:inline-block;color:var(--muted);text-decoration:none;font-size:.92rem;padding:4px 0 8px}
+  .swapapp{display:block;margin:8px 0 2px;padding:11px 14px;border-radius:12px;background:var(--accent-soft);color:var(--accent);text-decoration:none;font-size:.92rem}
+  .swapapp b{white-space:nowrap}
   .clear{background:none;border:none;color:var(--muted);font:inherit;font-size:.9rem;text-decoration:underline;cursor:pointer;padding:0;margin-top:10px}
   .dish{border:1.5px solid var(--line);border-radius:16px;padding:16px;margin-top:12px}
   .dish .kind{font-size:.85rem;font-weight:700;color:var(--warm)}
@@ -140,7 +143,9 @@
 </head>
 <body>
 <div class="wrap">
+  <a class="homelink" id="toHome" href="#">← 처음으로</a>
   <h1>🍲 오늘 저녁 뭐 해 먹지?</h1>
+  <a class="swapapp" id="toOrder" href="#">🛵 오늘은 시켜 먹을까요? <b>배달 메뉴 고르기 →</b></a>
   <nav class="tabs" id="tabs">
     <button data-v="rec" class="on">🍽 추천</button>
     <button data-v="menu">📋 메뉴 목록</button>
@@ -186,7 +191,7 @@
   <div id="result"></div>
 
   <div class="card">
-    <p class="q">최근에 해 먹은 메뉴</p>
+    <p class="q">최근에 먹은 것 <small>🍲 해 먹음 · 🛵 시켜 먹음</small></p>
     <div class="hist" id="hist"></div>
     <button class="clear" id="clearHist">기록 지우기</button>
   </div>
@@ -236,6 +241,10 @@
 <div class="sheetbg" id="sheetbg" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
 
 <script>
+document.getElementById('toHome').href = /github\.io$/.test(location.hostname) ? '../' : 'https://claude.ai/artifact/8Luk9xrK7wKUPetmV8mAJP';
+// ---- 배달 앱 주소: GitHub Pages에서는 같은 계정의 /delivery/ 저장소, 그 밖에서는 Claude 링크 ----
+const ORDER_URL = /github\.io$/.test(location.hostname) ? '../delivery/' : 'https://claude.ai/artifact/VSAtKR51naycm66LRPTD5A';
+document.getElementById('toOrder').href = ORDER_URL;
 // 집에 늘 있다고 보는 양념·기본 재료 (장보기 목록에서 뺌)
 const DEF_STAPLE = ['쌀','파','마늘','양파','간장','고추장','된장','고춧가루','설탕','소금','참기름','식용유','밀가루','후추','식초','물엿','올리브유','전분','국간장','케첩','마요네즈'];
 // 재료 버튼에 보여줄 것
@@ -574,6 +583,7 @@ function pickSlot(type, exclude=[]){
   return weightedPick(candidates(type, exclude), other);
 }
 function recommend(){
+  S.hist=store.get('dn_hist',[]);
   S.picked={};
   slots().forEach(([t])=>{ S.picked[t]=pickSlot(t); });
   renderResult(true);
@@ -629,7 +639,8 @@ function renderResult(anim){
   const ag=$('again'); if(ag) ag.onclick=recommend;
   const dc=$('decide'); if(dc) dc.onclick=()=>{
     const names=sl.map(([t])=>S.picked[t]).filter(Boolean).map(d=>d.n);
-    S.hist.unshift({names,ts:Date.now()}); S.hist=S.hist.slice(0,30); store.set('dn_hist',S.hist);
+    S.hist=store.get('dn_hist',[]); // 배달 앱에서 남긴 기록도 살림
+    S.hist.unshift({names,kind:'cook',ts:Date.now()}); S.hist=S.hist.slice(0,40); store.set('dn_hist',S.hist);
     renderHist();
     dc.parentElement.outerHTML=`<div class="done">맛있게 드세요! 😊 오늘 메뉴는 기록해 둘게요.</div>`;
   };
@@ -690,7 +701,7 @@ function ago(ts){
 function renderHist(){
   const h=$('hist');
   if(!S.hist.length){ h.innerHTML='<p class="empty">아직 기록이 없어요. "오늘 이걸로 할게요"를 누르면 여기에 남아요.</p>'; return; }
-  h.innerHTML=S.hist.slice(0,7).map(x=>`<div><span>${x.names.map(esc).join(' + ')}</span><small>${ago(x.ts)}</small></div>`).join('');
+  h.innerHTML=S.hist.slice().sort((a,b)=>b.ts-a.ts).slice(0,7).map(x=>`<div><span>${x.kind==='order'?'🛵':'🍲'} ${x.names.map(esc).join(' + ')}</span><small>${ago(x.ts)}</small></div>`).join('');
 }
 $('clearHist').onclick=()=>{ S.hist=[]; store.set('dn_hist',[]); renderHist(); };
 
@@ -900,6 +911,9 @@ $('importBtn').onclick=()=>{
   }catch(e){ msg('붙여넣은 내용을 읽을 수 없어요. "내 목록 복사"로 만든 글자를 그대로 붙여넣어 주세요.',true); }
 };
 
+// 다른 앱에서 돌아왔을 때 기록 새로고침
+window.addEventListener('pageshow',()=>{ S.hist=store.get('dn_hist',[]); renderHist(); });
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden){ S.hist=store.get('dn_hist',[]); renderHist(); } });
 renderIngs(); renderHist();
 showView(location.hash.slice(1));
 </script>
